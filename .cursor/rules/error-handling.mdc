@@ -1,0 +1,154 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Go Error Handling Guidelines
+
+## Error Types
+
+1. Custom error types for specific errors:
+```golang
+// Good
+type ValidationError struct {
+    Field string
+    Error string
+}
+
+func (v *ValidationError) Error() string {
+    return fmt.Sprintf("validation failed on %s: %s", v.Field, v.Error)
+}
+
+// Usage
+if !isValid {
+    return &ValidationError{
+        Field: "email",
+        Error: "invalid format",
+    }
+}
+```
+
+2. Error wrapping for context:
+```golang
+// Good
+if err := db.QueryRow(query, id).Scan(&user); err != nil {
+    return fmt.Errorf("fetching user %d: %w", id, err)
+}
+
+// Bad
+if err := db.QueryRow(query, id).Scan(&user); err != nil {
+    return err // Lost context
+}
+```
+
+## Error Handling Patterns
+
+1. Handle errors immediately:
+```golang
+// Good
+result, err := someFunction()
+if err != nil {
+    return fmt.Errorf("failed to execute someFunction: %w", err)
+}
+// Use result
+
+// Bad
+result, err := someFunction()
+// Do other things...
+if err != nil { // Too late
+    return err
+}
+```
+
+2. Don't panic in libraries:
+```golang
+// Good
+func ProcessData(data []byte) error {
+    if len(data) == 0 {
+        return errors.New("empty data provided")
+    }
+    // Process data
+}
+
+// Bad
+func ProcessData(data []byte) {
+    if len(data) == 0 {
+        panic("empty data provided")
+    }
+    // Process data
+}
+```
+
+## Error Checking
+
+1. Use `errcheck` tool:
+```golang
+// Must check errors
+file, err := os.Open("file.txt")
+if err != nil {
+    return fmt.Errorf("opening file: %w", err)
+}
+defer file.Close()
+```
+
+2. Use `staticcheck` for static analysis:
+```golang
+// Good
+var ErrNotFound = errors.New("not found")
+
+// Bad
+var errNotFound = errors.New("not found") // Unexported error
+```
+
+## Testing Errors
+
+1. Error comparison:
+```golang
+// Good
+if !errors.Is(err, ErrNotFound) {
+    t.Errorf("expected ErrNotFound, got %v", err)
+}
+
+// For custom errors
+if !errors.As(err, &ValidationError{}) {
+    t.Errorf("expected ValidationError, got %v", err)
+}
+```
+
+## Best Practices
+
+1. Use sentinel errors for expected error conditions:
+```golang
+var (
+    ErrNotFound = errors.New("resource not found")
+    ErrInvalid  = errors.New("invalid input")
+)
+```
+
+2. Return errors from exported functions:
+```golang
+// Good
+func (s *Service) ProcessItem(item Item) error {
+    if err := item.Validate(); err != nil {
+        return fmt.Errorf("validating item: %w", err)
+    }
+    return nil
+}
+```
+
+3. Use error groups for concurrent operations:
+```golang
+// Good
+g := new(errgroup.Group)
+for _, item := range items {
+    item := item // https://golang.org/doc/faq#closures_and_goroutines
+    g.Go(func() error {
+        return processItem(item)
+    })
+}
+if err := g.Wait(); err != nil {
+    return fmt.Errorf("processing items: %w", err)
+}
+```
+
+See [internal/errors/errors.go](mdc:internal/errors/errors.go) for implementation examples.

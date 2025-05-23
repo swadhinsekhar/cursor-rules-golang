@@ -1,0 +1,33 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# API Planning and Pseudocode
+
+Before writing any Go API code, always:
+
+1. Think step-by-step and describe your plan for the API structure, endpoints, and data flow in detailed pseudocode.
+2. Write out the pseudocode in comments or a separate planning section before implementation.
+3. Confirm the plan with your team or stakeholders before starting to write code.
+4. Only after the plan is confirmed, proceed to implementation.
+
+## Example Pseudocode
+
+```golang
+// Define API structure
+// Endpoint: GET /users
+// Handler: getUsers
+// Input: None
+// Output: JSON list of users
+// Steps:
+//   1. Validate request method
+//   2. Fetch users from database
+//   3. Marshal to JSON
+//   4. Return 200 OK with response
+```
+
+## Best Practices
+- Always plan before coding.
+- Use detailed pseudocode to clarify logic and data flow.
+- Confirm the plan before implementation to avoid rework.

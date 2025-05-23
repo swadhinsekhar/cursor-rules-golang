@@ -1,0 +1,69 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Logging
+
+We use Go's standard `log` package or a simple custom logger for backend logging.
+
+## Basic Logging
+
+Import the log package and use it for simple logging:
+
+```golang
+import (
+    "log"
+)
+
+func main() {
+    log.Println("Application started")
+    log.Printf("User created: %v", userID)
+}
+```
+
+## Scoped/Contextual Logging
+
+For more advanced use, create a logger with context using Go's `log.Logger` or a custom wrapper:
+
+```golang
+import (
+    "log"
+    "os"
+)
+
+var logger = log.New(os.Stdout, "[user] ", log.LstdFlags)
+
+func CreateUser(userID string) {
+    logger.Printf("Created user: %s", userID)
+}
+```
+
+## Structured Logging (Recommended for larger projects)
+
+Use a structured logging library like `log/slog` (Go 1.21+) or `zap` for context-rich logs:
+
+```golang
+import (
+    "log/slog"
+    "os"
+)
+
+var logger = slog.New(slog.NewTextHandler(os.Stdout, nil))
+
+func CreateUser(userID string) {
+    logger.Info("Created user", "userID", userID)
+}
+```
+
+## Best Practices
+
+- Add the logger at the top of the file or as a package/global variable.
+- For request-scoped logging, pass a logger with context (e.g., using context.Context or a custom logger) to functions.
+- Do not use global context for sensitive or user-specific data.
+- Prefer structured logging for production systems.
+- Avoid logging sensitive information (e.g., passwords, tokens).
+
+## Example
+
+See [internal/utils/logger.go](mdc:internal/utils/logger.go) for a custom logger implementation example.

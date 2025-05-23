@@ -1,0 +1,191 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Go Testing Guidelines
+
+## Test Structure
+
+1. Use table-driven tests:
+```golang
+func TestCalculate(t *testing.T) {
+    tests := []struct {
+        name     string
+        input    int
+        want     int
+        wantErr  bool
+    }{
+        {
+            name:    "positive number",
+            input:   5,
+            want:    10,
+            wantErr: false,
+        },
+        {
+            name:    "negative number",
+            input:   -5,
+            wantErr: true,
+        },
+    }
+
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            got, err := Calculate(tt.input)
+            if (err != nil) != tt.wantErr {
+                t.Errorf("Calculate() error = %v, wantErr %v", err, tt.wantErr)
+                return
+            }
+            if !tt.wantErr && got != tt.want {
+                t.Errorf("Calculate() = %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+```
+
+2. Use subtests for better organization:
+```golang
+func TestService(t *testing.T) {
+    t.Run("Create", func(t *testing.T) {
+        // Test creation
+    })
+
+    t.Run("Update", func(t *testing.T) {
+        // Test update
+    })
+
+    t.Run("Delete", func(t *testing.T) {
+        // Test deletion
+    })
+}
+```
+
+## Test Helpers
+
+1. Create test utilities:
+```golang
+// Good
+func setupTestDB(t *testing.T) (*sql.DB, func()) {
+    t.Helper() // Mark as helper function
+    db, err := sql.Open("postgres", "test-connection-string")
+    if err != nil {
+        t.Fatalf("setting up test db: %v", err)
+    }
+    
+    return db, func() {
+        db.Close()
+    }
+}
+
+// Usage
+func TestDatabase(t *testing.T) {
+    db, cleanup := setupTestDB(t)
+    defer cleanup()
+    // Run tests
+}
+```
+
+## Mocking
+
+1. Use interfaces for testability:
+```golang
+// Good
+type UserRepository interface {
+    GetUser(id int) (*User, error)
+}
+
+// Mock implementation
+type mockUserRepo struct {
+    users map[int]*User
+}
+
+func (m *mockUserRepo) GetUser(id int) (*User, error) {
+    user, ok := m.users[id]
+    if !ok {
+        return nil, ErrNotFound
+    }
+    return user, nil
+}
+```
+
+## Test Coverage
+
+1. Run tests with coverage:
+```bash
+go test -cover ./...
+```
+
+2. Generate coverage report:
+```bash
+go test -coverprofile=coverage.out ./...
+go tool cover -html=coverage.out
+```
+
+## Best Practices
+
+1. Test files should be in the same package:
+```golang
+// user.go
+package user
+
+// user_test.go
+package user_test // Use _test suffix for external test package
+```
+
+2. Use parallel tests when possible:
+```golang
+func TestParallel(t *testing.T) {
+    tests := []struct{
+        name string
+        // test cases
+    }{
+        // test cases here
+    }
+    
+    for _, tt := range tests {
+        tt := tt // Capture range variable
+        t.Run(tt.name, func(t *testing.T) {
+            t.Parallel() // Mark test as parallel
+            // Test implementation
+        })
+    }
+}
+```
+
+3. Use test fixtures:
+```golang
+// testdata/users.json
+// Place test data in testdata directory
+```
+
+4. Test race conditions:
+```bash
+go test -race ./...
+```
+
+## Integration Tests
+
+1. Use build tags:
+```golang
+// +build integration
+
+package integration
+
+func TestIntegration(t *testing.T) {
+    // Integration test implementation
+}
+```
+
+2. Separate integration test configuration:
+```golang
+// test_config.go
+package config
+
+var TestConfig = Config{
+    DBHost: "localhost",
+    DBPort: 5432,
+}
+```
+
+See [internal/api/handlers_test.go](mdc:internal/api/handlers_test.go) for implementation examples.

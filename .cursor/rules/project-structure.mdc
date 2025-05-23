@@ -1,0 +1,71 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Go Project Structure Guidelines
+
+## Directory Organization
+
+The project follows standard Go project layout:
+
+```
+.
+├── cmd/                    # Main applications
+│   └── cursor-rules/      # Main application entry point
+├── internal/              # Private application and library code
+│   ├── api/              # API handlers and middleware
+│   ├── config/           # Configuration management
+│   └── utils/            # Internal utilities
+├── pkg/                  # Public library code
+│   ├── analyzer/         # Code analysis tools
+│   ├── generator/        # Rule generation logic
+│   └── validator/        # Rule validation
+├── test/                 # Additional test data and test utilities
+└── docs/                 # Documentation
+```
+
+## File Naming Conventions
+
+1. Use snake_case for file names:
+```golang
+// Good
+api_handler.go
+user_service.go
+
+// Bad
+apiHandler.go
+UserService.go
+```
+
+2. Test files should be named with _test suffix:
+```golang
+// Good
+api_handler_test.go
+
+// Bad
+api_handler_tests.go
+```
+
+3. Package names should be short and clear:
+```golang
+// Good
+package api
+package validator
+
+// Bad
+package apihandlers
+package utility_functions
+```
+
+## Code Organization
+
+1. Group related files in packages
+2. Keep packages focused and cohesive
+3. Follow standard Go project layout
+4. Use internal/ for private implementation
+5. Place reusable code in pkg/
+
+## Implementation Examples
+
+See [cmd/cursor-rules/main.go](mdc:cmd/cursor-rules/main.go) for the main entry point example.
