@@ -66,4 +66,3 @@ func CreateUser(userID string) {
 
 ## Example
 
-See [internal/utils/logger.go](mdc:internal/utils/logger.go) for a custom logger implementation example.

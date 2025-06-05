@@ -5,6 +5,32 @@ alwaysApply: false
 ---
 # Go API Development Guidelines
 
+## API Security, Scalability, and Maintainability
+
+- Implement input validation for all API endpoints.
+- Utilize Go's built-in concurrency features (e.g., goroutines, channels) when beneficial for API performance.
+- Follow RESTful API design principles and Go best practices.
+- Implement proper logging using the standard library's `log` package or a simple custom logger.
+- Use middleware for cross-cutting concerns (e.g., logging, authentication, rate limiting).
+- Implement rate limiting and authentication/authorization using standard library features or simple custom implementations.
+- Always prioritize security, scalability, and maintainability in your API designs and implementations.
+
+## Example
+```golang
+func validateInput(input string) error {
+    if input == "" {
+        return errors.New("input cannot be empty")
+    }
+    return nil
+}
+
+func loggingMiddleware(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        log.Printf("%s %s", r.Method, r.URL.Path)
+        next.ServeHTTP(w, r)
+    })
+}
+```
 ## Handler Structure
 
 1. Use descriptive handler names with HTTP method prefix:

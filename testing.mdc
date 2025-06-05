@@ -187,5 +187,3 @@ var TestConfig = Config{
     DBPort: 5432,
 }
 ```
-
-See [internal/api/handlers_test.go](mdc:internal/api/handlers_test.go) for implementation examples.
